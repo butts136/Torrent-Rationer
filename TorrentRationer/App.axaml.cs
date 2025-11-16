@@ -6,6 +6,7 @@ using TorrentRationer.Views;
 using TorrentRationer.Services;
 using Avalonia.Styling;
 using ReactiveUI;
+using System.IO;
 
 namespace TorrentRationer
 {
@@ -22,24 +23,37 @@ namespace TorrentRationer
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Configure shutdown mode
+                desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                
                 try
                 {
-                    // Configure shutdown mode
-                    desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                    LogMessage("Starting initialization...");
                     
                     // Initialize services
                     _configService = new ConfigurationService();
+                    LogMessage("ConfigurationService created");
+                    
                     var torrentService = new TorrentService(_configService);
+                    LogMessage("TorrentService created");
+                    
                     var trackerService = new TrackerAnnounceService(_configService);
+                    LogMessage("TrackerAnnounceService created");
 
                     // Initialize ViewModels
                     var dashboardViewModel = new DashboardViewModel(torrentService, _configService);
+                    LogMessage("DashboardViewModel created");
+                    
                     var configurationViewModel = new ConfigurationViewModel(_configService);
+                    LogMessage("ConfigurationViewModel created");
+                    
                     var mainViewModel = new MainWindowViewModel(dashboardViewModel, configurationViewModel);
+                    LogMessage("MainWindowViewModel created");
 
                     // Apply theme based on configuration
                     var config = _configService.GetConfiguration();
                     ApplyTheme(config.DarkMode);
+                    LogMessage($"Theme applied: {(config.DarkMode ? "Dark" : "Light")}");
 
                     // Subscribe to dark mode changes
                     configurationViewModel.WhenAnyValue(x => x.DarkMode)
@@ -50,35 +64,70 @@ namespace TorrentRationer
                     {
                         DataContext = mainViewModel
                     };
+                    
+                    LogMessage("MainWindow created and assigned");
 
                     // Setup auto-start if enabled
                     SetupAutoStart(config.AutoStartWithWindows);
+                    
+                    LogMessage("Initialization completed successfully");
                 }
                 catch (Exception ex)
                 {
                     // Log any initialization errors
-                    System.Diagnostics.Debug.WriteLine($"Initialization error: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                    var errorMsg = $"FATAL ERROR during initialization:\n{ex.Message}\n{ex.StackTrace}";
+                    LogMessage(errorMsg);
+                    System.Diagnostics.Debug.WriteLine(errorMsg);
                     
-                    // Create a minimal error window to show the user
-                    desktop.MainWindow = new MainWindow
-                    {
-                        Title = "Torrent Rationer - Error"
-                    };
-                    
-                    // Write to a log file
+                    // Create a simple error window that will definitely show
                     try
                     {
-                        var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                            "TorrentRationer", "error.log");
-                        Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-                        File.WriteAllText(logPath, $"[{DateTime.Now}] Initialization error:\n{ex}\n");
+                        desktop.MainWindow = CreateErrorWindow(ex);
+                        LogMessage("Error window created");
                     }
-                    catch { /* Ignore log errors */ }
+                    catch (Exception ex2)
+                    {
+                        LogMessage($"Failed to create error window: {ex2.Message}");
+                        // Last resort - try to create the most basic window possible
+                        desktop.MainWindow = new Avalonia.Controls.Window
+                        {
+                            Title = "Torrent Rationer - Critical Error",
+                            Width = 500,
+                            Height = 300,
+                            Content = new Avalonia.Controls.TextBlock 
+                            { 
+                                Text = $"Critical Error:\n{ex.Message}\n\nCheck logs in:\n{GetLogDirectory()}"
+                            }
+                        };
+                    }
                 }
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private Avalonia.Controls.Window CreateErrorWindow(Exception ex)
+        {
+            var window = new Avalonia.Controls.Window
+            {
+                Title = "Torrent Rationer - Initialization Error",
+                Width = 600,
+                Height = 400,
+                WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterScreen
+            };
+
+            var scrollViewer = new Avalonia.Controls.ScrollViewer();
+            var textBlock = new Avalonia.Controls.TextBlock
+            {
+                Text = $"An error occurred during initialization:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}\n\nLog directory:\n{GetLogDirectory()}",
+                Margin = new Avalonia.Thickness(10),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+            
+            scrollViewer.Content = textBlock;
+            window.Content = scrollViewer;
+            
+            return window;
         }
 
         private void ApplyTheme(bool darkMode)
@@ -123,8 +172,24 @@ namespace TorrentRationer
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to setup auto-start: {ex.Message}");
+                LogMessage($"Failed to setup auto-start: {ex.Message}");
             }
+        }
+
+        private void LogMessage(string message)
+        {
+            try
+            {
+                var logPath = Path.Combine(GetLogDirectory(), "error.log");
+                Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
+            }
+            catch { /* Ignore log errors */ }
+        }
+
+        private string GetLogDirectory()
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TorrentRationer");
         }
     }
 }
