@@ -1,0 +1,16 @@
+{
+  "name": "Deluge 2.0.3",
+  "version": "2.0.3",
+  "peerIdPrefix": "DE203s",
+  "userAgent": "Deluge/2.0.3",
+  "supportedProtocols": ["http", "https", "udp"],
+  "announceParameters": {
+    "compact": 1,
+    "numwant": 200,
+    "port": 6881
+  },
+  "headers": {
+    "User-Agent": "Deluge/2.0.3 libtorrent/1.2.9.0",
+    "Connection": "close"
+  }
+}

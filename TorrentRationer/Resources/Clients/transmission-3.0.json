@@ -1,0 +1,16 @@
+{
+  "name": "Transmission 3.00",
+  "version": "3.00",
+  "peerIdPrefix": "TR3000",
+  "userAgent": "Transmission/3.00",
+  "supportedProtocols": ["http", "https", "udp"],
+  "announceParameters": {
+    "compact": 1,
+    "numwant": 80,
+    "port": 51413
+  },
+  "headers": {
+    "User-Agent": "Transmission/3.00",
+    "Connection": "close"
+  }
+}

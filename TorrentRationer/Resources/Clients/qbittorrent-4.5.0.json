@@ -1,0 +1,19 @@
+{
+  "name": "qBittorrent 4.5.0",
+  "version": "v4.5.0",
+  "peerIdPrefix": "qB4500",
+  "userAgent": "qBittorrent/4.5.0",
+  "supportedProtocols": ["http", "https", "udp"],
+  "announceParameters": {
+    "compact": 1,
+    "numwant": 200,
+    "no_peer_id": 0,
+    "supportcrypto": 1,
+    "port": 6881
+  },
+  "headers": {
+    "User-Agent": "qBittorrent/4.5.0",
+    "Accept-Encoding": "gzip",
+    "Connection": "close"
+  }
+}
