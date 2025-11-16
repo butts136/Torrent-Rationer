@@ -45,6 +45,9 @@ namespace TorrentRationer
                     DataContext = mainViewModel
                 };
 
+                // Show the main window
+                desktop.MainWindow.Show();
+
                 // Setup auto-start if enabled
                 SetupAutoStart(config.AutoStartWithWindows);
             }

@@ -50,13 +50,39 @@ This allows users to improve their tracker ratios without actually seeding files
 3. Follow the installation wizard
 4. Launch "Torrent Rationer" from the Start Menu
 
-#### Option 2: Standalone Executable
+#### Option 2: Portable Version (No Installation)
+1. Download `TorrentRationer-Portable-Windows-x64.zip` from the releases page
+2. Extract the ZIP file to your desired location
+3. Run `TorrentRationer.exe` directly - no installation required
+4. All settings and data will be stored in your AppData folder
+
+#### Option 3: Standalone Executable
 1. Download `TorrentRationer.exe` from the releases page
 2. Place it in your desired location
 3. Run directly - no installation required
 
 ### Linux
 
+#### Option 1: Portable Package
+1. Download `TorrentRationer-Portable-Linux-x64.tar.gz` from the releases page
+2. Extract the archive:
+   ```bash
+   tar -xzf TorrentRationer-Portable-Linux-x64.tar.gz
+   ```
+3. Navigate to the extracted folder:
+   ```bash
+   cd linux-x64
+   ```
+4. Make it executable:
+   ```bash
+   chmod +x TorrentRationer
+   ```
+5. Run it:
+   ```bash
+   ./TorrentRationer
+   ```
+
+#### Option 2: Standalone Executable
 1. Download the `TorrentRationer` executable for Linux
 2. Make it executable:
    ```bash
@@ -121,8 +147,10 @@ This repository includes a GitHub Actions workflow that automatically builds the
 - **Triggers**: Push to main or PR branches, manual workflow dispatch
 - **Outputs**:
   - Windows executable (`TorrentRationer.exe`)
+  - Windows portable package (`TorrentRationer-Portable-Windows-x64.zip`)
   - Windows installer (`TorrentRationer-Setup-1.0.0.exe`)
   - Linux executable (`TorrentRationer`)
+  - Linux portable package (`TorrentRationer-Portable-Linux-x64.tar.gz`)
 
 To download artifacts:
 1. Go to the [Actions tab](../../actions) in the repository
