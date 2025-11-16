@@ -1,0 +1,64 @@
+name: Build and Deploy Installer
+
+on:
+  push:
+    branches: [ main, copilot/create-installer-for-app ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Build Windows executable
+      run: pwsh build-windows.ps1
+    
+    - name: Setup Inno Setup
+      run: |
+        choco install innosetup -y
+    
+    - name: Create Windows installer
+      run: iscc installer.iss
+    
+    - name: Upload Windows executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: TorrentRationer-Windows
+        path: publish/win-x64/TorrentRationer.exe
+    
+    - name: Upload Windows installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: TorrentRationer-Installer
+        path: installer/TorrentRationer-Setup-*.exe
+  
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Build Linux executable
+      run: bash build-linux.sh
+    
+    - name: Upload Linux executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: TorrentRationer-Linux
+        path: publish/linux-x64/TorrentRationer

@@ -53,6 +53,22 @@ A cross-platform C# application that runs on both Windows and Linux.
 
 ## Building from Source
 
+### Automated Builds (GitHub Actions)
+
+This repository includes a GitHub Actions workflow that automatically builds the application and creates installers on every push:
+
+- **Workflow**: `.github/workflows/build-and-deploy.yml`
+- **Triggers**: Push to main or PR branches, manual workflow dispatch
+- **Outputs**:
+  - Windows executable (`TorrentRationer.exe`)
+  - Windows installer (`TorrentRationer-Setup-1.0.0.exe`)
+  - Linux executable (`TorrentRationer`)
+
+To download artifacts:
+1. Go to the [Actions tab](../../actions) in the repository
+2. Click on the latest workflow run
+3. Download the artifacts from the "Artifacts" section
+
 ### Prerequisites
 - Install [.NET 8.0 SDK](https://dotnet.microsoft.com/download)
 - Clone this repository
