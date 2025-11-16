@@ -21,6 +21,21 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
+  <!-- Ensure SkiaSharp native libraries are not bundled in single file -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph" Value="true" />
+  </ItemGroup>
+
+  <!-- Exclude native assets from single-file bundle to prevent SkiaSharp initialization errors -->
+  <Target Name="ExcludeNativeAssets" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <!-- Mark all native library files to be excluded from the bundle -->
+      <ResolvedFileToPublish Update="@(ResolvedFileToPublish)">
+        <ExcludeFromSingleFile Condition="'%(ResolvedFileToPublish.AssetType)' == 'native'">true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.10" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
