@@ -9,6 +9,27 @@
 
     <ScrollViewer>
         <StackPanel Margin="20" Spacing="15">
+            <!-- Control Panel -->
+            <Border BorderBrush="{DynamicResource SystemAccentColor}" 
+                    BorderThickness="2" 
+                    CornerRadius="8" 
+                    Padding="15">
+                <StackPanel Spacing="10" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Load Torrents" 
+                            Command="{Binding LoadTorrentsCommand}"
+                            Width="150"
+                            Height="40"/>
+                    <Button Content="Start Seeding" 
+                            Command="{Binding StartSeedingCommand}"
+                            Width="150"
+                            Height="40"/>
+                    <Button Content="Stop All" 
+                            Command="{Binding StopSeedingCommand}"
+                            Width="150"
+                            Height="40"/>
+                </StackPanel>
+            </Border>
+            
             <!-- Statistics Panel -->
             <Border BorderBrush="{DynamicResource SystemAccentColor}" 
                     BorderThickness="2" 
