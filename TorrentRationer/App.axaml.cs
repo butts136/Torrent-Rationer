@@ -22,34 +22,60 @@ namespace TorrentRationer
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Initialize services
-                _configService = new ConfigurationService();
-                var torrentService = new TorrentService(_configService);
-                var trackerService = new TrackerAnnounceService(_configService);
-
-                // Initialize ViewModels
-                var dashboardViewModel = new DashboardViewModel(torrentService, _configService);
-                var configurationViewModel = new ConfigurationViewModel(_configService);
-                var mainViewModel = new MainWindowViewModel(dashboardViewModel, configurationViewModel);
-
-                // Apply theme based on configuration
-                var config = _configService.GetConfiguration();
-                ApplyTheme(config.DarkMode);
-
-                // Subscribe to dark mode changes
-                configurationViewModel.WhenAnyValue(x => x.DarkMode)
-                    .Subscribe(darkMode => ApplyTheme(darkMode));
-
-                desktop.MainWindow = new MainWindow
+                try
                 {
-                    DataContext = mainViewModel
-                };
+                    // Configure shutdown mode
+                    desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                    
+                    // Initialize services
+                    _configService = new ConfigurationService();
+                    var torrentService = new TorrentService(_configService);
+                    var trackerService = new TrackerAnnounceService(_configService);
 
-                // Show the main window
-                desktop.MainWindow.Show();
+                    // Initialize ViewModels
+                    var dashboardViewModel = new DashboardViewModel(torrentService, _configService);
+                    var configurationViewModel = new ConfigurationViewModel(_configService);
+                    var mainViewModel = new MainWindowViewModel(dashboardViewModel, configurationViewModel);
 
-                // Setup auto-start if enabled
-                SetupAutoStart(config.AutoStartWithWindows);
+                    // Apply theme based on configuration
+                    var config = _configService.GetConfiguration();
+                    ApplyTheme(config.DarkMode);
+
+                    // Subscribe to dark mode changes
+                    configurationViewModel.WhenAnyValue(x => x.DarkMode)
+                        .Subscribe(darkMode => ApplyTheme(darkMode));
+
+                    // Create and assign the main window - it will be shown automatically
+                    desktop.MainWindow = new MainWindow
+                    {
+                        DataContext = mainViewModel
+                    };
+
+                    // Setup auto-start if enabled
+                    SetupAutoStart(config.AutoStartWithWindows);
+                }
+                catch (Exception ex)
+                {
+                    // Log any initialization errors
+                    System.Diagnostics.Debug.WriteLine($"Initialization error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                    
+                    // Create a minimal error window to show the user
+                    desktop.MainWindow = new MainWindow
+                    {
+                        Title = "Torrent Rationer - Error"
+                    };
+                    
+                    // Write to a log file
+                    try
+                    {
+                        var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                            "TorrentRationer", "error.log");
+                        Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+                        File.WriteAllText(logPath, $"[{DateTime.Now}] Initialization error:\n{ex}\n");
+                    }
+                    catch { /* Ignore log errors */ }
+                }
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -23,8 +23,18 @@ namespace TorrentRationer.ViewModels
 
             // Update statistics every 5 seconds
             _updateTimer = new System.Timers.Timer(5000);
-            _updateTimer.Elapsed += (s, e) => UpdateStatistics();
+            _updateTimer.Elapsed += (s, e) => 
+            {
+                try
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateStatistics());
+                }
+                catch { /* Ignore timer errors */ }
+            };
             _updateTimer.Start();
+            
+            // Initial statistics update
+            UpdateStatistics();
         }
 
         public ObservableCollection<TorrentInfo> Torrents => _torrentService.Torrents;
