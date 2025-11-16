@@ -1,70 +1,138 @@
-﻿using System;
+﻿using Avalonia;
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace TorrentRationer
 {
     class Program
     {
-        static void Main(string[] args)
+        // Initialization code. Don't use any Avalonia, third-party APIs or any
+        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+        // yet and stuff might break.
+        [STAThread]
+        public static void Main(string[] args)
         {
-            Console.WriteLine("=================================");
-            Console.WriteLine("   Torrent Rationer v1.0");
-            Console.WriteLine("   Cross-Platform Application");
-            Console.WriteLine("=================================");
-            Console.WriteLine();
-            
-            // Display platform information
-            string platform = GetPlatformName();
-            Console.WriteLine($"Running on: {platform}");
-            Console.WriteLine($"OS Description: {RuntimeInformation.OSDescription}");
-            Console.WriteLine($"Framework: {RuntimeInformation.FrameworkDescription}");
-            Console.WriteLine();
-            
-            Console.WriteLine("This is a Torrent Rationer application.");
-            Console.WriteLine("Designed to work on both Windows and Linux.");
-            Console.WriteLine();
-            
-            if (args.Length > 0)
-            {
-                Console.WriteLine("Arguments received:");
-                foreach (var arg in args)
-                {
-                    Console.WriteLine($"  - {arg}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("No arguments provided.");
-                Console.WriteLine("Usage: TorrentRationer [options]");
-            }
-            
-            Console.WriteLine();
-            
-            // Only wait for key if running interactively
             try
             {
-                if (Environment.UserInteractive && !Console.IsInputRedirected)
-                {
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
-                }
+                // Clear previous logs on startup
+                ClearStartupLog();
+                
+                // Log startup
+                LogStartup("=== APPLICATION STARTING ===");
+                LogStartup($"Command line args: {string.Join(" ", args)}");
+                LogStartup($"Current directory: {Environment.CurrentDirectory}");
+                LogStartup($"OS: {Environment.OSVersion}");
+                LogStartup($".NET: {Environment.Version}");
+                LogStartup($"Runtime: {RuntimeInformation.FrameworkDescription}");
+                LogStartup($"Architecture: {RuntimeInformation.ProcessArchitecture}");
+                LogStartup($"Log path: {GetLogPath()}");
+                
+                // Check for SkiaSharp native libraries
+                CheckSkiaSharpDependencies();
+                
+                LogStartup("Building Avalonia app...");
+                var app = BuildAvaloniaApp();
+                
+                LogStartup("Starting classic desktop lifetime...");
+                app.StartWithClassicDesktopLifetime(args);
+                
+                LogStartup("=== APPLICATION EXITED NORMALLY ===");
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore if console is not available
+                var errorMsg = $"FATAL ERROR in Main:\n{ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}";
+                
+                // Check for SkiaSharp specific error
+                if (ex.ToString().Contains("SkiaSharp") || ex.ToString().Contains("SKImageInfo"))
+                {
+                    errorMsg += "\n\n=== SKIASHARP INITIALIZATION ERROR ===\n";
+                    errorMsg += "This error indicates missing graphics dependencies.\n";
+                    errorMsg += "Solutions:\n";
+                    errorMsg += "1. Install Visual C++ Redistributable from:\n";
+                    errorMsg += "   https://aka.ms/vs/17/release/vc_redist.x64.exe\n";
+                    errorMsg += "2. Update your graphics drivers\n";
+                    errorMsg += "3. Try running the application as Administrator\n";
+                }
+                
+                LogStartup(errorMsg);
+                Console.WriteLine(errorMsg);
+                Console.WriteLine($"\nLog file location: {GetLogPath()}");
+                Console.WriteLine("\nPress any key to exit...");
+                
+                try { Console.ReadKey(); } catch { }
+                
+                throw;
             }
         }
-        
-        static string GetPlatformName()
+
+        // Avalonia configuration, don't remove; also used by visual designer.
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
+
+        private static void CheckSkiaSharpDependencies()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "Windows";
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return "Linux";
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return "macOS";
-            else
-                return "Unknown";
+            try
+            {
+                LogStartup("Checking SkiaSharp dependencies...");
+                
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Check for Visual C++ Runtime
+                    var systemDir = Environment.GetFolderPath(Environment.SpecialFolder.System);
+                    var vcRuntime = Path.Combine(systemDir, "vcruntime140.dll");
+                    var msvcp = Path.Combine(systemDir, "msvcp140.dll");
+                    
+                    LogStartup($"Checking for vcruntime140.dll: {File.Exists(vcRuntime)}");
+                    LogStartup($"Checking for msvcp140.dll: {File.Exists(msvcp)}");
+                    
+                    if (!File.Exists(vcRuntime) || !File.Exists(msvcp))
+                    {
+                        LogStartup("WARNING: Visual C++ Runtime files not found!");
+                        LogStartup("Download from: https://aka.ms/vs/17/release/vc_redist.x64.exe");
+                    }
+                }
+                
+                LogStartup("SkiaSharp dependency check completed");
+            }
+            catch (Exception ex)
+            {
+                LogStartup($"Error checking dependencies: {ex.Message}");
+            }
+        }
+
+        private static void ClearStartupLog()
+        {
+            try
+            {
+                var logPath = GetLogPath();
+                if (File.Exists(logPath))
+                {
+                    File.Delete(logPath);
+                }
+            }
+            catch { /* Ignore */ }
+        }
+
+        private static void LogStartup(string message)
+        {
+            try
+            {
+                var logPath = GetLogPath();
+                Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}\n");
+            }
+            catch { /* Ignore logging errors */ }
+        }
+
+        private static string GetLogPath()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "TorrentRationer", "startup.log");
         }
     }
 }

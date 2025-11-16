@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TorrentRationer.ViewModels"
+        xmlns:views="using:TorrentRationer.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="TorrentRationer.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Torrent Rationer"
+        Width="1200" Height="700"
+        MinWidth="800" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Tab Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource SystemAltHighColor}" Margin="10">
+            <Button Command="{Binding ShowDashboardCommand}" 
+                    Content="Dashboard" 
+                    Margin="5,0"
+                    Width="120"
+                    Height="35"/>
+            <Button Command="{Binding ShowConfigurationCommand}" 
+                    Content="Configuration" 
+                    Margin="5,0"
+                    Width="120"
+                    Height="35"/>
+        </StackPanel>
+
+        <!-- Content Area -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentView}">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:DashboardViewModel">
+                    <views:DashboardView />
+                </DataTemplate>
+                <DataTemplate DataType="vm:ConfigurationViewModel">
+                    <views:ConfigurationView />
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+    </Grid>
+</Window>

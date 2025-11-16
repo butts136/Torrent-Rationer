@@ -26,6 +26,13 @@ jobs:
     - name: Build Windows executable
       run: pwsh build-windows.ps1
     
+    - name: Create portable Windows package
+      run: |
+        New-Item -ItemType Directory -Force -Path portable/win-x64
+        Copy-Item -Path publish/win-x64/TorrentRationer.exe -Destination portable/win-x64/
+        Compress-Archive -Path portable/win-x64/* -DestinationPath portable/TorrentRationer-Portable-Windows-x64.zip
+      shell: pwsh
+    
     - name: Setup Inno Setup
       run: |
         choco install innosetup -y
@@ -38,6 +45,12 @@ jobs:
       with:
         name: TorrentRationer-Windows
         path: publish/win-x64/TorrentRationer.exe
+    
+    - name: Upload Windows portable package
+      uses: actions/upload-artifact@v4
+      with:
+        name: TorrentRationer-Portable-Windows
+        path: portable/TorrentRationer-Portable-Windows-x64.zip
     
     - name: Upload Windows installer
       uses: actions/upload-artifact@v4
@@ -60,8 +73,21 @@ jobs:
     - name: Build Linux executable
       run: bash build-linux.sh
     
+    - name: Create portable Linux package
+      run: |
+        mkdir -p portable/linux-x64
+        cp publish/linux-x64/TorrentRationer portable/linux-x64/
+        cd portable
+        tar -czf TorrentRationer-Portable-Linux-x64.tar.gz linux-x64/
+    
     - name: Upload Linux executable
       uses: actions/upload-artifact@v4
       with:
         name: TorrentRationer-Linux
         path: publish/linux-x64/TorrentRationer
+    
+    - name: Upload Linux portable package
+      uses: actions/upload-artifact@v4
+      with:
+        name: TorrentRationer-Portable-Linux
+        path: portable/TorrentRationer-Portable-Linux-x64.tar.gz
