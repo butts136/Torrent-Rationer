@@ -51,6 +51,11 @@ namespace TorrentRationer.Services
 
         public async Task LoadTorrentFile(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"Torrent file not found: {filePath}");
+            }
+
             await Task.Run(() =>
             {
                 try

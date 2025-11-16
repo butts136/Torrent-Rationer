@@ -19,6 +19,12 @@ namespace TorrentRationer.Services
 
         public async Task<bool> AnnounceToTracker(TorrentInfo torrent, string trackerUrl, string peerId, int port)
         {
+            if (torrent == null)
+                throw new ArgumentNullException(nameof(torrent));
+            
+            if (string.IsNullOrEmpty(trackerUrl))
+                throw new ArgumentNullException(nameof(trackerUrl));
+
             try
             {
                 var config = _configService.GetConfiguration();
