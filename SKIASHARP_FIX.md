@@ -6,14 +6,25 @@ The type initializer for 'SkiaSharp.SKImageInfo' threw an exception
 ```
 
 ## What This Means
-This error occurs when SkiaSharp (the graphics rendering library used by Avalonia) cannot initialize. This is typically caused by missing Visual C++ Runtime libraries on Windows.
+This error occurs when SkiaSharp (the graphics rendering library used by Avalonia) cannot initialize. This is caused by missing Visual C++ Runtime libraries on Windows.
 
-## SOLUTION (Windows)
+## SOLUTION FOR INSTALLER USERS
 
-### Option 1: Install Visual C++ Redistributable (RECOMMENDED)
+**The installer now automatically checks for Visual C++ Redistributable!**
 
-1. Download the Visual C++ Redistributable from Microsoft:
-   - Direct link: https://aka.ms/vs/17/release/vc_redist.x64.exe
+When you run the installer:
+1. It will check if Visual C++ Runtime is installed
+2. If missing, it will prompt you to download it
+3. Click "Yes" to open the download page
+4. Install the VC++ Redistributable
+5. Run the Torrent Rationer installer again
+
+## SOLUTION FOR PORTABLE VERSION USERS
+
+### Step 1: Download and Install Visual C++ Redistributable
+
+1. Download the installer from Microsoft:
+   - **Direct link**: https://aka.ms/vs/17/release/vc_redist.x64.exe
    - Or search for "Visual C++ Redistributable latest"
 
 2. Run the installer
@@ -22,9 +33,9 @@ This error occurs when SkiaSharp (the graphics rendering library used by Avaloni
 
 4. Try running Torrent Rationer again
 
-### Option 2: Install ALL Visual C++ Redistributables
+### Step 2: If That Doesn't Work - Install ALL Redistributables
 
-If Option 1 doesn't work, you may need multiple versions:
+If Step 1 doesn't work, you may need multiple versions:
 
 1. Download from: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 
@@ -32,7 +43,7 @@ If Option 1 doesn't work, you may need multiple versions:
    - vc_redist.x64.exe (64-bit)
    - vc_redist.x86.exe (32-bit, for compatibility)
 
-### Option 3: Update Graphics Drivers
+### Step 3: Update Graphics Drivers
 
 Outdated graphics drivers can also cause this issue:
 
@@ -45,7 +56,7 @@ Outdated graphics drivers can also cause this issue:
 
 3. Restart your computer
 
-## Technical Details
+## Why This Happens
 
 The error occurs because:
 - SkiaSharp is a cross-platform 2D graphics library
@@ -53,6 +64,17 @@ The error occurs because:
 - These native libraries depend on Visual C++ Runtime
 - If the runtime is missing or corrupted, SkiaSharp cannot initialize
 - Without SkiaSharp, Avalonia UI cannot render graphics
+
+## For Basic Users
+
+**TL;DR**: This application needs a free Windows component to work. 
+
+1. Download this: https://aka.ms/vs/17/release/vc_redist.x64.exe
+2. Double-click to install it
+3. Restart your computer
+4. Run Torrent Rationer again - it will now work!
+
+This is a one-time installation. After this, the application will work without any issues on your computer.
 
 ## Verification
 
@@ -65,10 +87,6 @@ After installing the Visual C++ Redistributable:
 2. If they exist, the redistributable is installed correctly
 
 3. Run Torrent Rationer again - it should now work!
-
-## Alternative: Non-Single-File Build
-
-If you continue to have issues, try the non-single-file portable build which extracts native libraries properly.
 
 ## Still Having Issues?
 
